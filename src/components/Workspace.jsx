@@ -20,8 +20,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
-const API_BASE = "http://localhost:8000";
-
+const API_BASE = "https://gemini-docx-backend.onrender.com";
+const API_KEY = "http://localhost:8000";
 const Workspace = ({ user }) => {
     const [apiKey, setApiKey] = useState("AIzaSyA6ErW5KKyEviPc_tHrGwYBmcNx5pcqZ2o");
     const [model, setModel] = useState("models/gemini-2.0-flash");
@@ -245,8 +245,8 @@ const Workspace = ({ user }) => {
                                         key={idx}
                                         onClick={() => loadSession(session.uuid)}
                                         className={`w-full text-left p-3.5 rounded-2xl transition-all group ${sessionId === session.uuid
-                                                ? 'bg-primary/10 border border-primary/20'
-                                                : 'bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10'
+                                            ? 'bg-primary/10 border border-primary/20'
+                                            : 'bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10'
                                             }`}
                                     >
                                         <div className={`text-xs font-bold truncate mb-1 ${sessionId === session.uuid ? 'text-primary' : 'text-slate-200 group-hover:text-white'}`}>
