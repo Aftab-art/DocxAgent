@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
-const API_BASE = "https://gemini-docx-backend.onrender.com";
+const API_BASE = "https://gemini-docx-agent-backend.onrender.com";
 const API_KEY = "http://localhost:8000";
 const Workspace = ({ user }) => {
     const [apiKey, setApiKey] = useState("AIzaSyA6ErW5KKyEviPc_tHrGwYBmcNx5pcqZ2o");
