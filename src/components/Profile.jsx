@@ -167,13 +167,19 @@ const Profile = ({ user, apiKey, setApiKey, model, setModel, onBack }) => {
                                             value={apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-xs outline-none focus:border-primary/50 transition-all font-mono tracking-wider"
-                                            placeholder="••••••••••••••••••••••••••••"
+                                            placeholder="Optional: Manual API Key Override"
                                         />
                                         <Shield className={`absolute right-4 top-4 w-4 h-4 transition-colors ${showKey ? 'text-primary' : 'text-slate-500'}`} />
                                     </div>
-                                    <p className="text-[9px] text-slate-500 mt-3 leading-relaxed flex items-center gap-2 italic">
+                                    <div className="flex items-center gap-2 mt-3 px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-xl w-fit">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                                        <span className="text-[9px] font-bold text-primary uppercase tracking-wider">
+                                            {apiKey ? "Manual Override Active" : "System Managed Security Active"}
+                                        </span>
+                                    </div>
+                                    <p className="text-[9px] text-slate-500 mt-2 leading-relaxed flex items-center gap-2 italic">
                                         <Shield className="w-3 h-3" />
-                                        Your key is never exposed publicly and stored only in your browser session.
+                                        If no key is entered, the system will use the secure server-side key.
                                     </p>
                                 </div>
                             </div>

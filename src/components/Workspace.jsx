@@ -129,6 +129,8 @@ const Workspace = ({ user }) => {
             const formData = new FormData();
             formData.append('session_id', sessionId);
             formData.append('prompt', userMsg);
+            if (apiKey) formData.append('api_key', apiKey);
+            formData.append('model', model);
 
             const response = await axios.post(`${API_BASE}/process-doc`, formData);
             const data = response.data;
@@ -145,7 +147,8 @@ const Workspace = ({ user }) => {
             }
         } catch (error) {
             console.error(error);
-            setErrorStatus("Processing error.");
+            const msg = error.response?.data?.detail || "Processing error.";
+            setErrorStatus(msg);
         } finally {
             setIsEditing(false);
         }
@@ -183,8 +186,9 @@ const Workspace = ({ user }) => {
             const data = resp.data;
             setSessionId(data.session_id);
             setDocMap(data.doc_map || []);
-            setApiKey(data.api_key || apiKey);
-            setModel(data.model || model);
+            // Prioritize local credentials that the user just entered
+            if (!apiKey) setApiKey(data.api_key || "");
+            if (!model) setModel(data.model || "models/gemini-2.0-flash");
             setMessages(data.history || []);
             setStagedEdit(null);
             setDownloadUrl(null);
