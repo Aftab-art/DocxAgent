@@ -29,7 +29,7 @@ import Profile from './Profile';
 const API_BASE = "http://localhost:8000";
 
 const Workspace = ({ user }) => {
-    const [apiKey, setApiKey] = useState("AIzaSyCvFWTU03VC_zWqILrQsvYaLfhAWrTHyA8");
+    const [apiKey, setApiKey] = useState("");
     const [model, setModel] = useState("models/gemini-2.0-flash");
     const [view, setView] = useState('chat'); // 'chat' or 'profile'
     const [messages, setMessages] = useState([
