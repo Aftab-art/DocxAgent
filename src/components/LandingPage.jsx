@@ -29,18 +29,18 @@ const LandingPage = () => {
         },
         {
             icon: <FileText className="w-6 h-6 text-primary" />,
-            title: "XML-Level Precision",
-            description: "Analyzes the raw XML structure of DOCX files for modifications that go beyond plain text, preserving complex layouts."
+            title: "Map-and-Snippet discovery",
+            description: "Initial mapping phase discover document structure, allowing the AI to read only relevant snippets—saving 90% of tokens."
         },
         {
             icon: <Zap className="w-6 h-6 text-primary" />,
-            title: "Surgical Document Edits",
-            description: "Tell the agent what to change, and watch it perform precise insertions, deletions, and formatting in real-time."
+            title: "Multi-Turn Interactive Editing",
+            description: "A stateful engine that remembers context across multiple turns, enabling complex, conversational document refinement."
         },
         {
             icon: <Shield className="w-6 h-6 text-primary" />,
-            title: "Enterprise Security",
-            description: "Session-based temporary data handling ensures your confidential documents never leak or remain on servers longer than needed."
+            title: "Enterprise Context Security",
+            description: "Session-based temporary data handling ensures your confidential documents are never permanently stored on servers."
         }
     ];
 
@@ -54,26 +54,26 @@ const LandingPage = () => {
     const workflowSteps = [
         {
             number: "01",
-            title: "Neural Ingestion",
-            description: "Upload your .docx file to our secure session. Our agent immediately parses the underlying XML structure.",
+            title: "Structure Mapping",
+            description: "Upload your .docx file. Our engine immediately generates a structural map of every paragraph and table.",
             icon: <FileText className="w-5 h-5 text-primary" />
         },
         {
             number: "02",
-            title: "Surgical Analysis",
-            description: "The agent identifies headers, tables, and text nodes with precision using the 15.2 Hybrid engine.",
+            title: "Snippet Discovery",
+            description: "The AI uses the map to surgically 'teleport' to specific sections, reading only what is needed for your request.",
             icon: <Search className="w-5 h-5 text-primary" />
         },
         {
             number: "03",
-            title: "Autonomous Edit",
-            description: "Provide natural language instructions. The agent performs complex modifications while preserving styles.",
+            title: "Contextual Refinement",
+            description: "Chat naturally with the agent. It maintains memory and context to handle multi-step instructions.",
             icon: <Edit3 className="w-5 h-5 text-primary" />
         },
         {
             number: "04",
-            title: "Lossless Export",
-            description: "Download your modified document. Verified XML structure ensures no corruption and compatibility.",
+            title: "Tracked Change Export",
+            description: "Download results with native Microsoft Word tracked changes injected directly into the XML structure.",
             icon: <Download className="w-5 h-5 text-primary" />
         }
     ];
@@ -101,7 +101,7 @@ const LandingPage = () => {
                     <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                         <Brain className="w-5 h-5 stroke-[2.5px]" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-white">DocAgent <span className="text-primary">Pro</span></span>
+                    <span className="text-xl font-bold tracking-tight text-white">Word Engine </span>
                 </div>
 
                 <div className="hidden md:flex items-center gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
@@ -142,7 +142,7 @@ const LandingPage = () => {
                     className="relative z-10 space-y-8 max-w-5xl"
                 >
                     <div className="inline-flex items-center gap-2.5 px-6 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/10">
-                        <Zap className="w-3.5 h-3.5 fill-primary" /> v15.2 Hybrid Engine Released
+                        <Zap className="w-3.5 h-3.5 fill-primary" /> v15.2 Word Engine Active
                     </div>
 
                     <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-white leading-[0.9] text-glow">
@@ -151,7 +151,7 @@ const LandingPage = () => {
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                        The world’s first Neural Document Agent that understands raw XML. Automate complex edits, formatting, and analysis with medical-grade precision.
+                        The world’s first Neural Document Agent using Map-and-Snippet discovery. Automate complex edits and analysis with surgical precision.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
@@ -278,10 +278,10 @@ const LandingPage = () => {
                             <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20 text-primary">
                                 <Brain className="w-4 h-4 stroke-[2.5px]" />
                             </div>
-                            <span className="font-bold tracking-tight text-white italic">DocAgent Pro</span>
+                            <span className="font-bold tracking-tight text-white italic">Word Engine V2</span>
                         </div>
                         <p className="max-w-sm text-sm font-medium leading-loose">
-                            Redefining document editing through neural intelligence and surgical AI precision at the XML layer.
+                            Redefining document editing through neural intelligence and Map-and-Snippet discovery at the XML layer.
                         </p>
                     </div>
 
@@ -299,9 +299,9 @@ const LandingPage = () => {
                         <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">System Status</h4>
                         <div className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse" />
-                            <span className="text-xs font-bold text-slate-100 italic">V15.2 Hybrid Operational</span>
+                            <span className="text-xs font-bold text-slate-100 italic">V15.2 Word Engine Online</span>
                         </div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest">© 2026 DocAgent Pro Network</p>
+                        <p className="text-[10px] uppercase font-bold tracking-widest">© 2026 Word Engine Network</p>
                     </div>
                 </div>
             </footer>

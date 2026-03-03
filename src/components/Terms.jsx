@@ -13,7 +13,7 @@ const Terms = () => {
                     <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20 text-primary">
                         <Brain className="w-5 h-5 stroke-[2.5px]" />
                     </div>
-                    <span className="font-bold tracking-tight text-white">DocAgent Pro</span>
+                    <span className="font-bold tracking-tight text-white">Word Engine</span>
                 </div>
                 <button onClick={() => navigate('/')} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-white transition-colors">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
@@ -37,11 +37,11 @@ const Terms = () => {
                     <section className="space-y-8 glass-morphism p-12 rounded-[2.5rem] border border-white/5 leading-relaxed">
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-white">1. Acceptance of Terms</h2>
-                            <p>By accessing and using DocAgent Pro, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+                            <p>By accessing and using Word Engine, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
                         </div>
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-white">2. AI-Powered Processing</h2>
-                            <p>DocAgent Pro utilizes Google Gemini API for document analysis and modification. While we strive for "surgical precision", you acknowledge that AI-generated content may require human oversight. We do not guarantee 100% accuracy for complex formatting changes.</p>
+                            <p>Word Engine utilizes the Gemini API and a proprietary <strong>Map-and-Snippet</strong> architecture for document analysis. While we strive for extreme precision, you acknowledge that AI-generated content may require human oversight. We do not guarantee 100% accuracy for complex formatting changes.</p>
                         </div>
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-white">3. Data Privacy</h2>
@@ -49,7 +49,7 @@ const Terms = () => {
                         </div>
                         <div className="space-y-4">
                             <h2 className="text-xl font-bold text-white">4. API Key Usage</h2>
-                            <p>Users providing their own Gemini API keys are responsible for all usage associated with those keys. DocAgent Pro is not liable for any costs or quota limitations incurred on the user's personal API account.</p>
+                            <p>Users providing their own Gemini API keys are responsible for all usage associated with those keys. Word Engine is not liable for any costs or quota limitations incurred on the user's personal API account.</p>
                         </div>
                     </section>
                 </motion.div>
