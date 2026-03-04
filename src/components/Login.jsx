@@ -77,13 +77,13 @@ const Login = () => {
                         <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary">
                             <Brain className="w-5 h-5 stroke-[2.5px]" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-white">DocAgent Pro</span>
+                        <span className="text-xl font-bold tracking-tight text-white">Word Engine</span>
                     </div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">
                         {isSignUp ? 'Create Account' : 'Welcome Back'}
                     </h1>
                     <p className="text-slate-500 text-sm">
-                        {isSignUp ? 'Join the neural document revolution' : 'Sign in to resume surgical document editing'}
+                        {isSignUp ? 'Join the neural document architecture' : 'Sign in to resume surgical document editing'}
                     </p>
                 </div>
 

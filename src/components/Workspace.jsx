@@ -26,7 +26,7 @@ import DocMap from './DocMap';
 import ReviewSidebar from './ReviewSidebar';
 import Profile from './Profile';
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 const Workspace = ({ user }) => {
     const [apiKey, setApiKey] = useState("");
