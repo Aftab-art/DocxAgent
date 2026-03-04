@@ -108,8 +108,10 @@ const Workspace = ({ user }) => {
             setMessages(prev => [...prev, { role: 'assistant', content: welcomeMsg }]);
             setView('chat');
         } catch (error) {
-            console.error(error);
-            setErrorStatus("Upload failed.");
+            console.error("DEBUG: Upload failed. API_BASE is:", API_BASE);
+            console.error("DEBUG: Error details:", error);
+            const msg = error.response?.data?.detail || error.message || "Upload failed.";
+            setErrorStatus(msg);
         } finally {
             setIsAnalyzing(false);
             await fetchHistory();
