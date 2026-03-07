@@ -25,6 +25,8 @@ import { auth } from '../firebase';
 import DocMap from './DocMap';
 import ReviewSidebar from './ReviewSidebar';
 import Profile from './Profile';
+import ComparisonSummary from './ComparisonSummary';
+import ReviewWorkspace from './ReviewWorkspace';
 
 const API_BASE = import.meta.env.VITE_API_BASE ||
     (window.location.hostname.includes('vercel.app')
@@ -53,6 +55,7 @@ const Workspace = ({ user }) => {
     const [activeElementId, setActiveElementId] = useState(null);
     const [stagedEdit, setStagedEdit] = useState(null);
     const [isCommitting, setIsCommitting] = useState(false);
+    const [comparisonStats, setComparisonStats] = useState(null);
 
     const chatEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -143,12 +146,22 @@ const Workspace = ({ user }) => {
             if (data.type === 'question') {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
             } else if (data.type === 'action') {
-                setStagedEdit(data);
-                setMessages(prev => [...prev, {
-                    role: 'assistant',
-                    content: `I've prepared a structural edit: ${data.summary}. Please review it in the sidebar.`,
-                    isStaged: true
-                }]);
+                // New structured Review data
+                if (data.review) {
+                    setStagedEdit(data.review);
+                    setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        content: `I've prepared a structural edit for the section "${data.review.element_id}". Please review it in the Side-by-Side view.`,
+                        isReview: true
+                    }]);
+                } else {
+                    setStagedEdit(data);
+                    setMessages(prev => [...prev, {
+                        role: 'assistant',
+                        content: `I've prepared a structural edit: ${data.summary}. Please review it in the sidebar.`,
+                        isStaged: true
+                    }]);
+                }
             }
         } catch (error) {
             console.error(error);
@@ -159,24 +172,73 @@ const Workspace = ({ user }) => {
         }
     };
 
-    const handleAcceptEdit = async () => {
-        if (!sessionId) return;
-        setIsCommitting(true);
+    const handleRejectEdit = async (elementId) => {
+        if (!sessionId || !stagedEdit) return;
+        setIsEditing(true);
         try {
             const formData = new FormData();
             formData.append('session_id', sessionId);
-            const resp = await axios.post(`${API_BASE}/commit-edits`, formData);
+            formData.append('element_id', elementId);
+            formData.append('original_xml', stagedEdit.original_xml);
 
-            setDownloadUrl(`${API_BASE}${resp.data.download_url}`);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: "Edit committed successfully. You can now download the updated document with native tracked changes.",
-                isAction: true,
-                download_url: `${API_BASE}${resp.data.download_url}`
-            }]);
+            await axios.post(`${API_BASE}/revert-edit`, formData);
+
+            setMessages(prev => [...prev, { role: 'assistant', content: `Change for section ${elementId} rejected and reverted.` }]);
             setStagedEdit(null);
         } catch (error) {
             console.error(error);
+            setErrorStatus("Revert failed.");
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+    const handleManualEdit = async (elementId, newText) => {
+        setIsEditing(true);
+        try {
+            const formData = new FormData();
+            formData.append('session_id', sessionId);
+            formData.append('prompt', `Apply this manual edit to section ${elementId}: ${newText}`);
+            if (apiKey) formData.append('api_key', apiKey);
+            formData.append('model', model);
+
+            const response = await axios.post(`${API_BASE}/process-doc`, formData);
+            const data = response.data;
+
+            if (data.review) {
+                setStagedEdit(data.review);
+            }
+            setMessages(prev => [...prev, { role: 'assistant', content: `Manual edit applied to ${elementId}.` }]);
+        } catch (error) {
+            setErrorStatus("Manual edit failed.");
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+    const handleAcceptEdit = async () => {
+        if (!sessionId) return;
+        setIsCommitting(true);
+        setComparisonStats(null);
+        try {
+            // Step 1: Commit edits to the document buffer
+            const commitFormData = new FormData();
+            commitFormData.append('session_id', sessionId);
+            await axios.post(`${API_BASE}/commit-edits`, commitFormData);
+
+            // Step 2: Get comparison summary (stats + tracked file)
+            const resp = await axios.get(`${API_BASE}/compare-summary/${sessionId}`);
+            setComparisonStats(resp.data);
+
+            setDownloadUrl(`${API_BASE}/download/${sessionId}`);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: "Comparison complete. Edits have been committed with native tracked changes. Review the summary below.",
+                isComparison: true,
+                stats: resp.data
+            }]);
+            setStagedEdit(null);
+        } catch (error) {
             setErrorStatus("Commit failed.");
         } finally {
             setIsCommitting(false);
@@ -327,12 +389,13 @@ const Workspace = ({ user }) => {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    {downloadUrl && (
+                                    {downloadUrl && !stagedEdit && (
                                         <motion.a
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             href={downloadUrl}
                                             className="flex items-center gap-2.5 px-6 py-2 bg-primary text-white text-xs font-bold rounded-full shadow-lg shadow-primary/30"
+                                            onClick={() => setDownloadUrl(null)} // Clear after download to force review of next changes
                                             download
                                         >
                                             <Download className="w-4 h-4" />
@@ -360,6 +423,14 @@ const Workspace = ({ user }) => {
                                             <div className="text-[14px] leading-relaxed">
                                                 {msg.isStaged && <div className="flex items-center gap-2 mb-2 text-[10px] font-black uppercase text-orange-500 bg-orange-500/10 w-fit px-2 py-0.5 rounded-full">Review Required</div>}
                                                 {msg.content}
+                                                {msg.isComparison && (
+                                                    <div className="mt-4">
+                                                        <ComparisonSummary
+                                                            stats={msg.stats}
+                                                            onDownload={() => window.location.href = `${API_BASE}/download/${sessionId}`}
+                                                        />
+                                                    </div>
+                                                )}
                                                 {msg.download_url && (
                                                     <a href={msg.download_url} download className="mt-4 flex items-center justify-center gap-2 py-3 bg-white text-black text-xs font-bold rounded-xl">
                                                         <Download className="w-4 h-4" /> Download Result
@@ -407,6 +478,28 @@ const Workspace = ({ user }) => {
                             isCommitting={isCommitting}
                             activeId={activeElementId}
                         />
+
+                        {/* Side-by-Side Review Overlay */}
+                        <AnimatePresence>
+                            {stagedEdit && stagedEdit.diff && (
+                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-12 bg-black/40 backdrop-blur-sm">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                        className="w-full max-w-6xl h-full max-h-[85vh] flex shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[3rem]"
+                                    >
+                                        <ReviewWorkspace
+                                            reviewData={stagedEdit}
+                                            onAccept={handleAcceptEdit}
+                                            onReject={handleRejectEdit}
+                                            onManualEdit={handleManualEdit}
+                                            isProcessing={isEditing || isCommitting}
+                                        />
+                                    </motion.div>
+                                </div>
+                            )}
+                        </AnimatePresence>
                     </motion.main>
                 ) : (
                     <Profile
