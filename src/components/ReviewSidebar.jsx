@@ -28,16 +28,46 @@ const ReviewSidebar = ({ stagedEdit, onAccept, isCommitting, activeId }) => {
                         </div>
 
                         <div className="space-y-3">
-                            <p className="text-[10px] uppercase font-bold text-slate-500">Structural Diff Preview</p>
-                            <div className="p-4 rounded-2xl bg-[#0f1118] border border-white/10 font-mono text-[11px] space-y-2">
-                                <div className="text-red-400 opacity-50 flex items-start gap-2">
-                                    <span className="shrink-0">-</span>
-                                    <span>[Original XML Fragment Indexed]</span>
-                                </div>
-                                <div className="text-primary flex items-start gap-2">
-                                    <span className="shrink-0">+</span>
-                                    <span>[Updated XML with Tracked Changes]</span>
-                                </div>
+                            <div className="flex items-center justify-between">
+                                <p className="text-[10px] uppercase font-bold text-slate-500">Structural Diff Preview</p>
+                                {stagedEdit.diff && (
+                                    <button
+                                        onClick={() => window.dispatchEvent(new CustomEvent('open-review'))}
+                                        className="text-[10px] text-primary font-bold hover:underline"
+                                    >
+                                        Detailed Comparison
+                                    </button>
+                                )}
+                            </div>
+                            <div className="p-4 rounded-2xl bg-[#0f1118] border border-white/10 font-mono text-[11px] space-y-2 max-h-48 overflow-y-auto">
+                                {stagedEdit.diff ? (
+                                    stagedEdit.diff.slice(0, 10).map(([type, word], idx) => (
+                                        <span
+                                            key={idx}
+                                            className={
+                                                type === 'insert' ? 'text-emerald-400 bg-emerald-400/10 px-1 rounded' :
+                                                    type === 'delete' ? 'text-red-400/60 line-through' :
+                                                        'text-slate-400'
+                                            }
+                                        >
+                                            {word}{' '}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <>
+                                        <div className="text-red-400 opacity-50 flex items-start gap-2">
+                                            <span className="shrink-0">-</span>
+                                            <span>[Original XML Fragment Indexed]</span>
+                                        </div>
+                                        <div className="text-primary flex items-start gap-2">
+                                            <span className="shrink-0">+</span>
+                                            <span>[Updated XML with Tracked Changes]</span>
+                                        </div>
+                                    </>
+                                )}
+                                {stagedEdit.diff && stagedEdit.diff.length > 10 && (
+                                    <p className="text-[9px] text-slate-600 mt-2 italic text-center">... and more changes</p>
+                                )}
                             </div>
                         </div>
 

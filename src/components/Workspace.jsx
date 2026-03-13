@@ -17,7 +17,9 @@ import {
     Plus,
     ChevronRight,
     Shield,
-    User
+    User,
+    X,
+    Edit3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'firebase/auth';
@@ -27,6 +29,7 @@ import ReviewSidebar from './ReviewSidebar';
 import Profile from './Profile';
 import ComparisonSummary from './ComparisonSummary';
 import ReviewWorkspace from './ReviewWorkspace';
+import DocxViewer from './DocxViewer';
 
 const API_BASE = import.meta.env.VITE_API_BASE ||
     (window.location.hostname.includes('vercel.app')
@@ -54,8 +57,17 @@ const Workspace = ({ user }) => {
     const [docMap, setDocMap] = useState([]);
     const [activeElementId, setActiveElementId] = useState(null);
     const [stagedEdit, setStagedEdit] = useState(null);
+    const [showFullReview, setShowFullReview] = useState(false);
     const [isCommitting, setIsCommitting] = useState(false);
+
+    useEffect(() => {
+        const handleOpenReview = () => setShowFullReview(true);
+        window.addEventListener('open-review', handleOpenReview);
+        return () => window.removeEventListener('open-review', handleOpenReview);
+    }, []);
     const [comparisonStats, setComparisonStats] = useState(null);
+    const [docBlob, setDocBlob] = useState(null);
+    const [showFullPreview, setShowFullPreview] = useState(false);
 
     const chatEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -113,6 +125,8 @@ const Workspace = ({ user }) => {
             const welcomeMsg = response.data.welcome_question || `Success! I've indexed "${file.name}". I have the document map ready.`;
             setMessages(prev => [...prev, { role: 'assistant', content: welcomeMsg }]);
             setView('chat');
+            // Fetch initial blob for preview
+            fetchDocBlob(response.data.session_id);
         } catch (error) {
             console.error("DEBUG: Upload failed. API_BASE is:", API_BASE);
             console.error("DEBUG: Error details:", error);
@@ -142,6 +156,10 @@ const Workspace = ({ user }) => {
 
             const response = await axios.post(`${API_BASE}/process-doc`, formData);
             const data = response.data;
+            if (!data) {
+                setErrorStatus("Server returned empty response.");
+                return;
+            }
 
             if (data.type === 'question') {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
@@ -151,11 +169,15 @@ const Workspace = ({ user }) => {
                     setStagedEdit(data.review);
                     setMessages(prev => [...prev, {
                         role: 'assistant',
-                        content: `I've prepared a structural edit for the section "${data.review.element_id}". Please review it in the Side-by-Side view.`,
-                        isReview: true
+                        content: `I've prepared a structural edit for the section "${data.review.element_id}".`,
+                        isReview: true,
+                        reviewData: data.review
                     }]);
+                    // Refresh blob but DON'T show automatically
+                    fetchDocBlob(sessionId);
                 } else {
                     setStagedEdit(data);
+                    setShowFullReview(true);
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: `I've prepared a structural edit: ${data.summary}. Please review it in the sidebar.`,
@@ -166,7 +188,12 @@ const Workspace = ({ user }) => {
         } catch (error) {
             console.error(error);
             const msg = error.response?.data?.detail || "Processing error.";
-            setErrorStatus(msg);
+
+            if (error.response?.status === 429 || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("exhausted")) {
+                setErrorStatus("AI Quota Exhausted. Please wait a minute or upgrade your plan.");
+            } else {
+                setErrorStatus(msg);
+            }
         } finally {
             setIsEditing(false);
         }
@@ -185,6 +212,9 @@ const Workspace = ({ user }) => {
 
             setMessages(prev => [...prev, { role: 'assistant', content: `Change for section ${elementId} rejected and reverted.` }]);
             setStagedEdit(null);
+            setShowFullReview(false);
+            // Refresh preview after rejection to show original state
+            fetchDocBlob(sessionId);
         } catch (error) {
             console.error(error);
             setErrorStatus("Revert failed.");
@@ -207,6 +237,8 @@ const Workspace = ({ user }) => {
 
             if (data.review) {
                 setStagedEdit(data.review);
+                // Refresh preview to show manual edit
+                fetchDocBlob(sessionId);
             }
             setMessages(prev => [...prev, { role: 'assistant', content: `Manual edit applied to ${elementId}.` }]);
         } catch (error) {
@@ -238,6 +270,9 @@ const Workspace = ({ user }) => {
                 stats: resp.data
             }]);
             setStagedEdit(null);
+            setShowFullReview(false);
+            // Refresh preview after commit
+            fetchDocBlob(sessionId);
         } catch (error) {
             setErrorStatus("Commit failed.");
         } finally {
@@ -260,11 +295,26 @@ const Workspace = ({ user }) => {
             setStagedEdit(null);
             setDownloadUrl(null);
             setView('chat');
+            // Fetch blob for preview
+            fetchDocBlob(data.session_id);
         } catch (error) {
             console.error("Failed to load session:", error);
             setErrorStatus("Failed to load session.");
         } finally {
             setIsSyncing(false);
+        }
+    };
+
+    const fetchDocBlob = async (sid) => {
+        const targetSid = sid || sessionId;
+        if (!targetSid) return;
+        try {
+            const response = await axios.get(`${API_BASE}/download/${targetSid}`, {
+                responseType: 'blob'
+            });
+            setDocBlob(response.data);
+        } catch (error) {
+            console.error("Failed to fetch doc blob:", error);
         }
     };
 
@@ -359,11 +409,21 @@ const Workspace = ({ user }) => {
                         Upload DOCX
                     </button>
                     <input type="file" hidden ref={fileInputRef} onChange={handleFileUpload} accept=".docx" />
+
+                    {sessionId && (
+                        <button
+                            onClick={() => setShowFullPreview(true)}
+                            className="w-full flex items-center justify-center gap-3 bg-primary text-white hover:bg-primary/90 font-bold py-4 rounded-3xl transition-all group shadow-xl shadow-primary/10"
+                        >
+                            <FileCheck className="w-5 h-5" />
+                            Full Preview
+                        </button>
+                    )}
                 </div>
             </aside>
 
             {/* Main Content Area */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 {view === 'chat' ? (
                     <motion.main
                         key="chat"
@@ -382,7 +442,7 @@ const Workspace = ({ user }) => {
                                     </div>
                                     {errorStatus && (
                                         <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
-                                            <AlertCircle className="w-3 h-3 text-red-500" />
+                                            <AlertCircle className="w-4 h-4 text-red-500" />
                                             <span className="text-[10px] font-black uppercase tracking-widest text-red-500">{errorStatus}</span>
                                         </div>
                                     )}
@@ -423,6 +483,17 @@ const Workspace = ({ user }) => {
                                             <div className="text-[14px] leading-relaxed">
                                                 {msg.isStaged && <div className="flex items-center gap-2 mb-2 text-[10px] font-black uppercase text-orange-500 bg-orange-500/10 w-fit px-2 py-0.5 rounded-full">Review Required</div>}
                                                 {msg.content}
+                                                {msg.isReview && (
+                                                    <div className="mt-8 border-t border-white/5 pt-8">
+                                                        <button
+                                                            onClick={() => setShowFullReview(true)}
+                                                            className="flex items-center gap-3 px-8 py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                            Review Proposed Edit
+                                                        </button>
+                                                    </div>
+                                                )}
                                                 {msg.isComparison && (
                                                     <div className="mt-4">
                                                         <ComparisonSummary
@@ -479,22 +550,52 @@ const Workspace = ({ user }) => {
                             activeId={activeElementId}
                         />
 
-                        {/* Side-by-Side Review Overlay */}
+                        {/* Side-by-Side Review Overlay (True Full Screen) */}
                         <AnimatePresence>
-                            {stagedEdit && stagedEdit.diff && (
-                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-12 bg-black/40 backdrop-blur-sm">
+                            {stagedEdit && showFullReview && (
+                                <div className="fixed inset-0 z-[200] flex flex-col bg-[#0d0f14]">
                                     <motion.div
-                                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                        className="w-full max-w-6xl h-full max-h-[85vh] flex shadow-[0_0_100px_rgba(0,0,0,0.8)] rounded-[3rem]"
+                                        initial={{ opacity: 0, y: 50 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 50 }}
+                                        className="w-full h-full flex flex-col relative"
                                     >
+                                        <button
+                                            onClick={() => setShowFullReview(false)}
+                                            className="absolute top-10 right-10 z-[210] p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110 active:scale-90"
+                                        >
+                                            <X className="w-8 h-8" />
+                                        </button>
                                         <ReviewWorkspace
+                                            blob={docBlob}
                                             reviewData={stagedEdit}
                                             onAccept={handleAcceptEdit}
                                             onReject={handleRejectEdit}
                                             onManualEdit={handleManualEdit}
                                             isProcessing={isEditing || isCommitting}
+                                        />
+                                    </motion.div>
+                                </div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Full Document Preview Overlay */}
+                        <AnimatePresence>
+                            {showFullPreview && (
+                                <div className="fixed inset-0 z-[120] flex items-center justify-center p-8 bg-black/60 backdrop-blur-md">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                                        className="w-full max-w-7xl h-full flex shadow-[0_0_100px_rgba(0,0,0,0.5)]"
+                                    >
+                                        <DocxViewer
+                                            blob={docBlob}
+                                            onClose={() => setShowFullPreview(false)}
+                                            onDownload={() => {
+                                                if (downloadUrl) window.location.href = downloadUrl;
+                                                else window.location.href = `${API_BASE}/download/${sessionId}`;
+                                            }}
                                         />
                                     </motion.div>
                                 </div>

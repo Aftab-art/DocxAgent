@@ -42,7 +42,7 @@ const ComparisonSummary = ({ stats, onDownload }) => {
             </div>
 
             <div className="mt-6 flex items-center gap-2 text-[10px] text-gray-400 bg-white/5 p-3 rounded-lg border border-white/5">
-                <CheckCircle className="w-3.3 h-3.3 text-blue-400" />
+                <CheckCircle className="w-4 h-4 text-blue-400" />
                 Tracked Changes enabled: Open in Microsoft Word to see detailed revisions.
             </div>
         </div>
