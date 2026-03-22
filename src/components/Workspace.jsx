@@ -28,8 +28,7 @@ import DocMap from './DocMap';
 import ReviewSidebar from './ReviewSidebar';
 import Profile from './Profile';
 import ComparisonSummary from './ComparisonSummary';
-import ReviewWorkspace from './ReviewWorkspace';
-import DocxViewer from './DocxViewer';
+import AdvancedReviewEditor from './AdvancedReviewEditor';
 
 const API_BASE = import.meta.env.VITE_API_BASE ||
     (window.location.hostname.includes('vercel.app')
@@ -566,13 +565,12 @@ const Workspace = ({ user }) => {
                                         >
                                             <X className="w-8 h-8" />
                                         </button>
-                                        <ReviewWorkspace
+                                        <AdvancedReviewEditor
                                             blob={docBlob}
-                                            reviewData={stagedEdit}
-                                            onAccept={handleAcceptEdit}
-                                            onReject={handleRejectEdit}
-                                            onManualEdit={handleManualEdit}
-                                            isProcessing={isEditing || isCommitting}
+                                            sessionId={sessionId}
+                                            onClose={() => setShowFullReview(false)}
+                                            onAcceptAll={handleAcceptEdit}
+                                            mode="suggesting"
                                         />
                                     </motion.div>
                                 </div>
@@ -589,13 +587,12 @@ const Workspace = ({ user }) => {
                                         exit={{ opacity: 0, scale: 0.9, y: 30 }}
                                         className="w-full max-w-7xl h-full flex shadow-[0_0_100px_rgba(0,0,0,0.5)]"
                                     >
-                                        <DocxViewer
+                                        <AdvancedReviewEditor
                                             blob={docBlob}
+                                            sessionId={sessionId}
                                             onClose={() => setShowFullPreview(false)}
-                                            onDownload={() => {
-                                                if (downloadUrl) window.location.href = downloadUrl;
-                                                else window.location.href = `${API_BASE}/download/${sessionId}`;
-                                            }}
+                                            onAcceptAll={handleAcceptEdit}
+                                            mode="viewing" // or 'suggesting' if they want to edit in full preview too
                                         />
                                     </motion.div>
                                 </div>

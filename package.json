@@ -9,9 +9,9 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@eigenpal/docx-js-editor": "^0.0.30",
         "axios": "^1.6.2",
         "clsx": "^2.0.0",
-        "docx-preview": "^0.3.7",
         "firebase": "^12.10.0",
         "framer-motion": "^10.16.5",
         "lucide-react": "^0.284.0",
