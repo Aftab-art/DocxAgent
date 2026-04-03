@@ -29,6 +29,7 @@ import ReviewSidebar from './ReviewSidebar';
 import Profile from './Profile';
 import ComparisonSummary from './ComparisonSummary';
 import AdvancedReviewEditor from './AdvancedReviewEditor';
+import ResumeMaker from './resume-maker/ResumeMaker';
 
 const API_BASE = import.meta.env.VITE_API_BASE ||
     (window.location.hostname.includes('vercel.app')
@@ -38,7 +39,7 @@ const API_BASE = import.meta.env.VITE_API_BASE ||
 const Workspace = ({ user }) => {
     const [apiKey, setApiKey] = useState("");
     const [model, setModel] = useState("models/gemini-2.0-flash");
-    const [view, setView] = useState('chat'); // 'chat' or 'profile'
+    const [view, setView] = useState('chat'); // 'chat', 'profile', or 'resume-maker'
     const [messages, setMessages] = useState([
         { role: 'assistant', content: "Welcome to Word Engine. I've been upgraded with Map-and-Snippet logic for high fidelity edits. Upload a file to see the document map." }
     ]);
@@ -352,6 +353,13 @@ const Workspace = ({ user }) => {
                             <User className="w-4 h-4" />
                             View Profile
                         </button>
+                        <button
+                            onClick={() => setView('resume-maker')}
+                            className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all font-bold ${view === 'resume-maker' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:bg-white/5'}`}
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            AI Resume Maker
+                        </button>
                     </div>
 
                     <div className="h-px bg-white/5 mx-2" />
@@ -577,7 +585,6 @@ const Workspace = ({ user }) => {
                             )}
                         </AnimatePresence>
 
-                        {/* Full Document Preview Overlay */}
                         <AnimatePresence>
                             {showFullPreview && (
                                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-8 bg-black/60 backdrop-blur-md">
@@ -592,13 +599,33 @@ const Workspace = ({ user }) => {
                                             sessionId={sessionId}
                                             onClose={() => setShowFullPreview(false)}
                                             onAcceptAll={handleAcceptEdit}
-                                            mode="viewing" // or 'suggesting' if they want to edit in full preview too
+                                            mode="viewing"
                                         />
                                     </motion.div>
                                 </div>
                             )}
                         </AnimatePresence>
                     </motion.main>
+                ) : view === 'resume-maker' ? (
+                    <div className="flex-1 flex flex-col relative overflow-hidden">
+                        <header className="h-20 flex items-center justify-between px-12 border-b border-white/5 backdrop-blur-xl z-10 shrink-0">
+                            <h2 className="text-xl font-bold">AI Resume Maker</h2>
+                            <button
+                                onClick={() => setView('chat')}
+                                className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold transition-all"
+                            >
+                                Back to Editor
+                            </button>
+                        </header>
+                        <div className="flex-1 overflow-hidden p-12">
+                             <ResumeMaker 
+                                user={user} 
+                                apiKey={apiKey} 
+                                model={model} 
+                                setModel={setModel}
+                             />
+                        </div>
+                    </div>
                 ) : (
                     <Profile
                         user={user}

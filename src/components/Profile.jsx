@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
+import { GEMINI_MODELS } from '../constants/models';
 
 const Profile = ({ user, apiKey, setApiKey, model, setModel, onBack }) => {
     const [isEditingName, setIsEditingName] = useState(false);
@@ -203,55 +204,13 @@ const Profile = ({ user, apiKey, setApiKey, model, setModel, onBack }) => {
                                         className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-[11px] outline-none focus:border-primary/50 text-white appearance-none cursor-pointer hover:bg-black/60 transition-all font-bold scrollbar-hide"
                                     >
                                         <option value="models/gemini-2.0-flash">Auto-Select (Recommended)</option>
-
-                                        <optgroup label="Gemini 2.5 Series (Experimental)">
-                                            <option value="models/gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                            <option value="models/gemini-2.5-pro">Gemini 2.5 Pro</option>
-                                            <option value="models/gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-                                            <option value="models/gemini-2.5-flash-image">Gemini 2.5 Flash Image</option>
-                                            <option value="models/gemini-2.5-flash-native-audio-latest">Gemini 2.5 Flash Native Audio</option>
-                                            <option value="models/gemini-2.5-computer-use-preview-10-2025">Gemini 2.5 Computer Use</option>
-                                        </optgroup>
-
-                                        <optgroup label="Gemini 2.0 Series">
-                                            <option value="models/gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                            <option value="models/gemini-2.0-flash-001">Gemini 2.0 Flash-001</option>
-                                            <option value="models/gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
-                                            <option value="models/gemini-2.0-flash-lite-001">Gemini 2.0 Flash Lite-001</option>
-                                            <option value="models/gemini-2.0-pro-exp-02-05">Gemini 2.0 Pro Exp</option>
-                                        </optgroup>
-
-                                        <optgroup label="Gemini 3.x Series (Preview)">
-                                            <option value="models/gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
-                                            <option value="models/gemini-3.1-pro-preview-customtools">Gemini 3.1 Pro (Custom Tools)</option>
-                                            <option value="models/gemini-3-pro-preview">Gemini 3 Pro Preview</option>
-                                            <option value="models/gemini-3-flash-preview">Gemini 3 Flash Preview</option>
-                                        </optgroup>
-
-                                        <optgroup label="Gemma Open Models">
-                                            <option value="models/gemma-3-27b-it">Gemma 3 27B</option>
-                                            <option value="models/gemma-3-12b-it">Gemma 3 12B</option>
-                                            <option value="models/gemma-3-4b-it">Gemma 3 4B</option>
-                                            <option value="models/gemma-3-1b-it">Gemma 3 1B</option>
-                                        </optgroup>
-
-                                        <optgroup label="Gemini 1.5 & Legacy">
-                                            <option value="models/gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                            <option value="models/gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                            <option value="models/gemini-flash-latest">Gemini Flash (Latest)</option>
-                                            <option value="models/gemini-pro-latest">Gemini Pro (Latest)</option>
-                                        </optgroup>
-
-                                        <optgroup label="Specialized Engines">
-                                            <option value="models/deep-research-pro-preview-12-2025">Deep Research Pro</option>
-                                            <option value="models/aqa">AQA (Attributable QA)</option>
-                                            <option value="models/gemini-embedding-001">Text Embedding</option>
-                                        </optgroup>
-
-                                        <optgroup label="Visual & Creative">
-                                            <option value="models/imagen-4.0-ultra-generate-001">Imagen 4 Ultra</option>
-                                            <option value="models/veo-3.0-fast-generate-001">Veo 3 Fast</option>
-                                        </optgroup>
+                                        {GEMINI_MODELS.map((group, idx) => (
+                                            <optgroup key={idx} label={group.group}>
+                                                {group.models.map((m) => (
+                                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                                ))}
+                                            </optgroup>
+                                        ))}
                                     </select>
                                     <div className="mt-4 flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
                                         <Settings2 className="w-4 h-4 text-slate-500" />
