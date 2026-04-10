@@ -3,7 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Download, FileText, Printer, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE } from '../../config';
+
 
 import TemplateFactory from './engine/TemplateFactory';
 

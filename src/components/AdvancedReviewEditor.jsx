@@ -3,7 +3,8 @@ import { DocxEditor } from '@eigenpal/docx-js-editor';
 import { Check, X, Download, Save, Loader2, Sidebar } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE } from '../config';
+
 
 const AdvancedReviewEditor = ({ 
     blob, 

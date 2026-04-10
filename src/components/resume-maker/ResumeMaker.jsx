@@ -6,8 +6,11 @@ import ResumeForm from './ResumeForm';
 import AIInterviewer from './AIInterviewer';
 import ResumePreview from './ResumePreview';
 import OptimizationLoading from './OptimizationLoading';
-import { Sparkles, Layout, MessageSquare, Eye, Cpu, ChevronDown, Zap } from 'lucide-react';
+import { Sparkles, Layout, MessageSquare, Eye, Cpu, ChevronDown, Zap, AlertCircle } from 'lucide-react';
+
 import { GEMINI_MODELS } from '../../constants/models';
+import { API_BASE } from '../../config';
+
 
 const ResumeMaker = ({ user, apiKey, model, setModel }) => {
     const [step, setStep] = useState('gallery'); // 'gallery', 'form', 'interview', 'preview'
@@ -18,7 +21,6 @@ const ResumeMaker = ({ user, apiKey, model, setModel }) => {
     const [isValidating, setIsValidating] = useState(false);
     const [error, setError] = useState(null);
 
-    const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
     const handleTemplateSelect = (template) => {
         setSelectedTemplate(template);
@@ -199,6 +201,39 @@ const ResumeMaker = ({ user, apiKey, model, setModel }) => {
                                                 <button 
                                                     onClick={handleSkipOptimization}
                                                     className="w-full py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                                                >
+                                                    Skip AI & Use Raw Data
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : error === "GE_API_ERROR" ? (
+                                    <div className="h-full flex items-center justify-center p-6">
+                                        <div className="w-full max-w-lg bg-[#0f111a] border border-red-500/20 rounded-[3rem] p-12 text-center space-y-8 shadow-2xl relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-red-500/5 blur-3xl rounded-full -m-20" />
+                                            <div className="w-20 h-20 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20 relative">
+                                                <AlertCircle className="w-10 h-10 text-red-500" />
+                                            </div>
+                                            <div className="space-y-2 relative">
+                                                <h3 className="text-2xl font-black uppercase tracking-tighter text-white">Connection Error</h3>
+                                                <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                                                    We couldn't reach the AI Engine. This often happens if the server is waking up from a cold start.
+                                                    <span className="block mt-2 text-primary font-bold">Please wait 60 seconds and try again.</span>
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col gap-3 relative">
+                                                <button 
+                                                    onClick={() => {
+                                                        setError(null);
+                                                        handleFormComplete(initialFormData);
+                                                    }}
+                                                    className="w-full py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                                                >
+                                                    Retry Optimization
+                                                </button>
+                                                <button 
+                                                    onClick={handleSkipOptimization}
+                                                    className="w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 transition-all"
                                                 >
                                                     Skip AI & Use Raw Data
                                                 </button>

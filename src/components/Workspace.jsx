@@ -31,10 +31,8 @@ import ComparisonSummary from './ComparisonSummary';
 import AdvancedReviewEditor from './AdvancedReviewEditor';
 import ResumeMaker from './resume-maker/ResumeMaker';
 
-const API_BASE = import.meta.env.VITE_API_BASE ||
-    (window.location.hostname.includes('vercel.app')
-        ? "https://docxagent-backend-1.onrender.com"
-        : "http://localhost:8000");
+import { API_BASE } from '../config';
+
 
 const Workspace = ({ user }) => {
     const [apiKey, setApiKey] = useState("");

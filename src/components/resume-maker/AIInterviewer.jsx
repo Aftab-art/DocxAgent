@@ -3,7 +3,8 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, Sparkles, Brain, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE } from '../../config';
+
 
 const AIInterviewer = ({ user, apiKey, model, templateId, initialData, firstReply, onComplete, onBack }) => {
     const [messages, setMessages] = useState([
