@@ -13,7 +13,10 @@ import {
     Edit3,
     History,
     Download,
-    Brain
+    Brain,
+    Sparkles,
+    Layout,
+    MessageSquare
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -28,9 +31,9 @@ const LandingPage = () => {
             description: "Automatically cycles through 44+ Gemini models to bypass quota limits and find the best performing available engine."
         },
         {
-            icon: <FileText className="w-6 h-6 text-primary" />,
-            title: "Map-and-Snippet discovery",
-            description: "Initial mapping phase discover document structure, allowing the AI to read only relevant snippets—saving 90% of tokens."
+            icon: <Sparkles className="w-6 h-6 text-primary" />,
+            title: "AI Resume Architect",
+            description: "Dedicated engine for professional resume crafting with interactive interviewing and ATS-optimized logic."
         },
         {
             icon: <Zap className="w-6 h-6 text-primary" />,
@@ -47,7 +50,7 @@ const LandingPage = () => {
     const stats = [
         { label: "Models Supported", value: "44+" },
         { label: "Processing Speed", value: "<1.2s" },
-        { label: "Accuracy Rate", value: "99.9%" },
+        { label: "Resumes Crafted", value: "8.5k+" },
         { label: "Active Sessions", value: "12k+" }
     ];
 
@@ -112,6 +115,12 @@ const LandingPage = () => {
                         Features
                     </button>
                     <button
+                        onClick={() => scrollToSection('resume')}
+                        className={`hover:text-white transition-all hover:tracking-[0.3em] ${location.hash === '#resume' ? 'text-primary border-b-2 border-primary pb-1' : ''}`}
+                    >
+                        Resume Builder
+                    </button>
+                    <button
                         onClick={() => scrollToSection('workflow')}
                         className={`hover:text-white transition-all hover:tracking-[0.3em] ${location.hash === '#workflow' ? 'text-primary border-b-2 border-primary pb-1' : ''}`}
                     >
@@ -151,7 +160,7 @@ const LandingPage = () => {
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-                        The world’s first Neural Document Agent using Map-and-Snippet discovery. Automate complex edits and analysis with surgical precision.
+                        The world’s first Neural Document Agent for surgical Word edits and high-impact AI resume crafting.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
@@ -226,6 +235,75 @@ const LandingPage = () => {
                     ))}
                 </div>
             </section>
+            
+            {/* Resume Architect Section */}
+            <section id="resume" className="px-12 py-40 relative bg-primary/[0.02]">
+                <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        className="space-y-8"
+                    >
+                        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-primary text-[10px] font-black uppercase tracking-widest">
+                            <Sparkles className="w-3.5 h-3.5" /> High-Impact Career Tools
+                        </div>
+                        <h2 className="text-5xl font-bold tracking-tight text-white leading-tight">
+                            The AI Resume <br />
+                            <span className="text-primary italic">Architect</span>
+                        </h2>
+                        <p className="text-xl text-slate-400 leading-relaxed font-medium">
+                            Don't just edit—transform. Our dedicated resume engine uses dynamic analysis to craft compelling narratives that bypass ATS filters and wow recruiters.
+                        </p>
+                        
+                        <div className="space-y-6">
+                            {[
+                                { icon: <MessageSquare className="w-5 h-5" />, title: "Interactive AI Interviewer", desc: "The engine talks to you to extract hidden achievements and quantify your impact." },
+                                { icon: <Layout className="w-5 h-5" />, title: "Professional Gallery", desc: "Choose from 10+ premium, designer-crafted layouts optimized for readability." },
+                                { icon: <Zap className="w-5 h-5" />, title: "ATS Optimization", desc: "Built-in structural logic ensures your data is correctly parsed by enterprise recruiting systems." }
+                            ].map((item, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className="shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
+                                        {item.icon}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-white font-bold">{item.title}</h4>
+                                        <p className="text-sm text-slate-500">{item.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/workspace')}
+                            className="px-10 py-4 bg-white text-black font-black rounded-2xl flex items-center gap-3 transition-all"
+                        >
+                            Build Your Resume <ArrowRight className="w-5 h-5" />
+                        </motion.button>
+                    </motion.div>
+
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="relative"
+                    >
+                        <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full -z-10" />
+                        <div className="bg-gradient-to-b from-white/10 to-transparent p-3 rounded-[3rem] border border-white/10 backdrop-blur-2xl shadow-2xl">
+                             <img 
+                                src="/resume_mockup.png" 
+                                alt="Resume Maker Interface" 
+                                className="rounded-[2.5rem] shadow-2xl border border-white/5"
+                                onError={(e) => {
+                                    e.target.src = "https://images.unsplash.com/photo-1586281380349-631531a3124b?q=80&w=2000&auto=format&fit=crop";
+                                }}
+                            />
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
 
             {/* Workflow Section */}
             <section id="workflow" className="px-12 py-40 bg-white/[0.01] border-y border-white/5">
@@ -290,6 +368,7 @@ const LandingPage = () => {
                         <ul className="space-y-3 text-sm font-bold">
                             <li><button onClick={() => scrollToSection('top')} className="hover:text-primary transition-colors">Home</button></li>
                             <li><button onClick={() => scrollToSection('features')} className="hover:text-primary transition-colors">Features</button></li>
+                            <li><button onClick={() => scrollToSection('resume')} className="hover:text-primary transition-colors">Resume AI</button></li>
                             <li><button onClick={() => scrollToSection('workflow')} className="hover:text-primary transition-colors">Workflow</button></li>
                             <li><button onClick={() => navigate('/terms')} className="hover:text-primary transition-colors">Legal</button></li>
                         </ul>
