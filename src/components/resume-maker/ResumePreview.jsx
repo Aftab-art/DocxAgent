@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-import { Download, FileText, Printer, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, FileText, Printer, ArrowLeft, Loader2, CheckCircle, Edit3, Eye } from 'lucide-react';
+import { DocxEditor } from '@eigenpal/docx-js-editor';
 
 import { API_BASE } from '../../config';
 
@@ -9,10 +10,34 @@ import { API_BASE } from '../../config';
 import TemplateFactory from './engine/TemplateFactory';
 
 const ResumePreview = ({ data, template, onBack }) => {
+    const editorRef = useRef(null);
     const [isExporting, setIsExporting] = useState(null); // 'pdf' or 'docx'
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [docxBuffer, setDocxBuffer] = useState(null);
+    const [isLoadingDoc, setIsLoadingDoc] = useState(false);
     const [editedData, setEditedData] = useState(JSON.stringify(data, null, 2));
+
+    const fetchDocx = async () => {
+        setIsLoadingDoc(true);
+        setError(null);
+        try {
+            const response = await axios.post(`${API_BASE}/generate-resume`, {
+                resume_json: data,
+                template_id: template.id,
+                format: 'docx'
+            }, {
+                responseType: 'arraybuffer'
+            });
+            setDocxBuffer(response.data);
+            setIsEditing(true);
+        } catch (err) {
+            console.error("Fetch DOCX error:", err);
+            setError("Failed to load document for editing.");
+        } finally {
+            setIsLoadingDoc(false);
+        }
+    };
 
     const handleSaveEdit = () => {
         try {
@@ -23,21 +48,57 @@ const ResumePreview = ({ data, template, onBack }) => {
         }
     };
 
-    const handleExport = async (format) => {
+    const handleManualDownload = async (format) => {
+        if (!editorRef.current) return;
         setIsExporting(format);
         setError(null);
-        let exportData = data;
         try {
-            exportData = JSON.parse(editedData);
-        } catch (e) {
-            setError("Cannot export while JSON is invalid.");
-            setIsExporting(null);
-            return;
-        }
+            const buffer = await editorRef.current.save();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 
+            if (format === 'docx') {
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `Resume_${data.basics?.name?.replace(/\s+/g, '_')}_Edited.docx`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } else if (format === 'pdf') {
+                // Send buffer to backend for conversion
+                const formData = new FormData();
+                formData.append('file', blob, 'resume.docx');
+                
+                const response = await axios.post(`${API_BASE}/convert-to-pdf`, formData, {
+                    responseType: 'blob'
+                });
+                
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `Resume_${data.basics?.name?.replace(/\s+/g, '_')}_Edited.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
+        } catch (error) {
+            console.error("Manual export error:", error);
+            setError(`Failed to export modified ${format.toUpperCase()}.`);
+        } finally {
+            setIsExporting(null);
+        }
+    };
+
+    const handleExport = async (format) => {
+        if (isEditing) {
+            return handleManualDownload(format);
+        }
+        setIsExporting(format);
+        setError(null);
+        
         try {
             const response = await axios.post(`${API_BASE}/generate-resume`, {
-                resume_json: exportData,
+                resume_json: data,
                 template_id: template.id,
                 format: format
             }, {
@@ -77,10 +138,19 @@ const ResumePreview = ({ data, template, onBack }) => {
 
                  <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsEditing(!isEditing)}
-                        className="px-6 py-3 bg-white/5 hover:bg-white/10 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all"
+                        onClick={() => isEditing ? setIsEditing(false) : fetchDocx()}
+                        disabled={isLoadingDoc}
+                        className={`px-6 py-3 flex items-center gap-2 text-xs font-black uppercase tracking-widest rounded-2xl transition-all ${
+                            isEditing ? "bg-white/10 text-white" : "bg-primary/20 text-primary border border-primary/30"
+                        }`}
                     >
-                        {isEditing ? "View Preview" : "Edit Data"}
+                        {isLoadingDoc ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isEditing ? (
+                            <><Eye className="w-4 h-4" /> View Preview</>
+                        ) : (
+                            <><Edit3 className="w-4 h-4" /> Edit Manually</>
+                        )}
                     </button>
                     <button
                         onClick={() => handleExport('pdf')}
@@ -88,7 +158,7 @@ const ResumePreview = ({ data, template, onBack }) => {
                         className="flex-1 lg:flex-none flex items-center gap-2.5 px-6 py-3 bg-white text-black text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all disabled:opacity-50"
                     >
                         {isExporting === 'pdf' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-                        Export PDF
+                        {isEditing ? "Download PDF" : "Export PDF"}
                     </button>
                     <button
                         onClick={() => handleExport('docx')}
@@ -96,7 +166,7 @@ const ResumePreview = ({ data, template, onBack }) => {
                         className="flex-1 lg:flex-none flex items-center gap-2.5 px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                     >
                         {isExporting === 'docx' ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                        Export DOCX
+                        {isEditing ? "Download DOCX" : "Export DOCX"}
                     </button>
                 </div>
             </div>
@@ -107,32 +177,46 @@ const ResumePreview = ({ data, template, onBack }) => {
                 </div>
             )}
 
-            {/* Preview Container */}
-            <div className="flex-1 overflow-y-auto no-scrollbar bg-slate-900/50 rounded-[2.5rem] border border-white/5 p-12 flex justify-center relative">
-                {isEditing ? (
-                    <div className="w-full max-w-4xl h-full flex flex-col gap-4">
-                        <textarea
-                            value={editedData}
-                            onChange={(e) => setEditedData(e.target.value)}
-                            className="flex-1 bg-black/40 border border-white/10 rounded-3xl p-8 font-mono text-sm text-green-400 outline-none focus:border-primary/50 resize-none"
-                            placeholder="Resume JSON Data..."
+             <div className="flex-1 overflow-hidden bg-slate-900/50 rounded-[2.5rem] border border-white/5 p-4 flex justify-center relative">
+                {isEditing && docxBuffer ? (
+                    <div className="w-full h-full relative group">
+                        <DocxEditor
+                            ref={editorRef}
+                            documentBuffer={docxBuffer}
+                            className="h-full w-full rounded-2xl overflow-hidden"
+                            mode="editing"
                         />
-                         <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl text-[10px] text-primary uppercase font-bold text-center">
-                            Note: Directly editing the JSON allows for maximum flexibility. Changes will be reflected in the preview and export.
+                        <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-[10px] text-slate-400 font-bold uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                            Manual Edit Mode
                         </div>
                     </div>
                 ) : (
-                    <div className="w-full max-w-[850px] aspect-[1/1.414] bg-white text-black shadow-2xl rounded-sm overflow-hidden flex flex-col scale-[0.8] origin-top">
-                        <TemplateFactory 
-                            layoutId={template.layout} 
-                            themeId={template.theme} 
-                            data={(() => {
-                                try { return JSON.parse(editedData); } catch(e) { return data; }
-                            })()} 
-                        />
+                    <div className="flex-1 overflow-y-auto no-scrollbar p-8 flex justify-center">
+                        <div className="w-full max-w-[850px] aspect-[1/1.414] bg-white text-black shadow-2xl rounded-sm overflow-hidden flex flex-col scale-[0.8] origin-top">
+                            <TemplateFactory 
+                                layoutId={template.layout} 
+                                themeId={template.theme} 
+                                data={data} 
+                            />
+                        </div>
                     </div>
                 )}
             </div>
+
+            <style>{`
+                .docx-editor-container {
+                    background: transparent !important;
+                }
+                .docx-editor-canvas {
+                    box-shadow: 0 40px 100px rgba(0,0,0,0.5) !important;
+                    margin: 20px auto !important;
+                    border-radius: 4px;
+                }
+                .docx-editor-sidebar {
+                    background: #1e293b !important;
+                    border-left: 1px solid rgba(255,255,255,0.1) !important;
+                }
+            `}</style>
         </div>
     );
 };
